@@ -10,7 +10,7 @@ public record CommentResponse(
         Long id,
         Long ticketId,
         Long authorId,
-        String body,
+        String content,
         Instant createdAt,
         Instant updatedAt,
         Long version,

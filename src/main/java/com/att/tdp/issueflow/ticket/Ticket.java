@@ -21,7 +21,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
-import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -60,7 +59,7 @@ public class Ticket {
     @JoinColumn(name = "assignee_id")
     private User assignee;
 
-    private LocalDate dueDate;
+    private Instant dueDate;
 
     @Column(nullable = false)
     private boolean overdue = false;
@@ -79,7 +78,7 @@ public class Ticket {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    public Ticket(String title, String description, TicketStatus status, TicketPriority priority, TicketType type, Project project, User assignee, LocalDate dueDate) {
+    public Ticket(String title, String description, TicketStatus status, TicketPriority priority, TicketType type, Project project, User assignee, Instant dueDate) {
         this.title = title;
         this.description = description;
         this.status = status;

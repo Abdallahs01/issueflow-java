@@ -6,7 +6,6 @@ import com.att.tdp.issueflow.ticket.TicketStatus;
 import com.att.tdp.issueflow.ticket.TicketType;
 
 import java.time.Instant;
-import java.time.LocalDate;
 
 public record TicketResponse(
         Long id,
@@ -17,7 +16,7 @@ public record TicketResponse(
         TicketType type,
         Long projectId,
         Long assigneeId,
-        LocalDate dueDate,
+        Instant dueDate,
         boolean overdue,
         boolean deleted,
         Instant lastAutoEscalatedAt,

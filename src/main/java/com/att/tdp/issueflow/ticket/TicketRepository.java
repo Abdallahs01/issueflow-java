@@ -2,7 +2,7 @@ package com.att.tdp.issueflow.ticket;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,7 +14,7 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
     Optional<Ticket> findByIdAndDeletedFalse(Long ticketId);
 
-    List<Ticket> findByDeletedFalseAndStatusNotAndDueDateBefore(TicketStatus status, LocalDate dueDate);
+    List<Ticket> findByDeletedFalseAndStatusNotAndDueDateBefore(TicketStatus status, Instant dueDate);
 
     long countByProjectIdAndAssigneeIdAndDeletedFalseAndStatusNot(Long projectId, Long assigneeId, TicketStatus status);
 }

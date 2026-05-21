@@ -4,6 +4,7 @@ import com.att.tdp.issueflow.audit.AuditLogService;
 import com.att.tdp.issueflow.comment.dto.CommentResponse;
 import com.att.tdp.issueflow.comment.dto.CreateCommentRequest;
 import com.att.tdp.issueflow.comment.dto.UpdateCommentRequest;
+import com.att.tdp.issueflow.common.BadRequestException;
 import com.att.tdp.issueflow.common.ResourceNotFoundException;
 import com.att.tdp.issueflow.mention.MentionService;
 import com.att.tdp.issueflow.ticket.Ticket;
@@ -47,7 +48,7 @@ public class CommentService {
         Ticket ticket = ticketService.findActiveTicketById(ticketId);
         User author = userService.findUserById(request.authorId());
 
-        Comment comment = new Comment(ticket, author, request.body());
+        Comment comment = new Comment(ticket, author, request.content());
         Comment savedComment = commentRepository.save(comment);
         mentionService.refreshMentions(savedComment);
         auditLogService.recordCurrentUserAction("COMMENT", savedComment.getId(), "CREATE", "Comment was created.");
@@ -59,7 +60,8 @@ public class CommentService {
     public void updateComment(Long ticketId, Long commentId, UpdateCommentRequest request) {
         ticketService.findActiveTicketById(ticketId);
         Comment comment = findCommentById(commentId);
-        comment.setBody(request.body());
+        validateCommentBelongsToTicket(comment, ticketId);
+        comment.setBody(request.content());
         mentionService.refreshMentions(comment);
         auditLogService.recordCurrentUserAction("COMMENT", comment.getId(), "UPDATE", "Comment was updated.");
     }
@@ -68,12 +70,20 @@ public class CommentService {
     public void deleteComment(Long ticketId, Long commentId) {
         ticketService.findActiveTicketById(ticketId);
         Comment comment = findCommentById(commentId);
+        validateCommentBelongsToTicket(comment, ticketId);
         auditLogService.recordCurrentUserAction("COMMENT", comment.getId(), "DELETE", "Comment was deleted.");
+        mentionService.deleteMentionsForComment(comment.getId());
         commentRepository.delete(comment);
     }
 
     private Comment findCommentById(Long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Comment was not found."));
+    }
+
+    private void validateCommentBelongsToTicket(Comment comment, Long ticketId) {
+        if (!comment.getTicket().getId().equals(ticketId)) {
+            throw new BadRequestException("Comment does not belong to the requested ticket.");
+        }
     }
 }

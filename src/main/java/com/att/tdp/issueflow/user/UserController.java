@@ -1,6 +1,6 @@
 package com.att.tdp.issueflow.user;
 
-import com.att.tdp.issueflow.comment.dto.CommentResponse;
+import com.att.tdp.issueflow.mention.MentionPageResponse;
 import com.att.tdp.issueflow.mention.MentionService;
 import com.att.tdp.issueflow.user.dto.CreateUserRequest;
 import com.att.tdp.issueflow.user.dto.UpdateUserRequest;
@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -39,8 +40,12 @@ public class UserController {
     }
 
     @GetMapping("/{userId}/mentions")
-    public List<CommentResponse> getMentionsForUser(@PathVariable Long userId) {
-        return mentionService.getMentionsForUser(userId);
+    public MentionPageResponse getMentionsForUser(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "20") int pageSize
+    ) {
+        return mentionService.getMentionsForUser(userId, page, pageSize);
     }
 
     @PostMapping

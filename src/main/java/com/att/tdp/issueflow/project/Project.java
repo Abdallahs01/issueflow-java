@@ -1,10 +1,14 @@
 package com.att.tdp.issueflow.project;
 
+import com.att.tdp.issueflow.user.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -31,6 +35,10 @@ public class Project {
     @Column(length = 1000)
     private String description;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "owner_id", nullable = false)
+    private User owner;
+
     @Column(nullable = false)
     private boolean deleted = false;
 
@@ -40,9 +48,10 @@ public class Project {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    public Project(String name, String description) {
+    public Project(String name, String description, User owner) {
         this.name = name;
         this.description = description;
+        this.owner = owner;
     }
 
     @PrePersist

@@ -22,7 +22,9 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -170,13 +172,21 @@ public class TicketCsvService {
         }
     }
 
-    private LocalDate optionalDate(CSVRecord record, String column) {
+    private Instant optionalDate(CSVRecord record, String column) {
         String value = record.get(column);
 
         try {
-            return value == null || value.isBlank() ? null : LocalDate.parse(value);
+            if (value == null || value.isBlank()) {
+                return null;
+            }
+
+            if (value.contains("T")) {
+                return Instant.parse(value);
+            }
+
+            return LocalDate.parse(value).atStartOfDay().toInstant(ZoneOffset.UTC);
         } catch (RuntimeException exception) {
-            throw new BadRequestException(column + " must use ISO date format yyyy-MM-dd.");
+            throw new BadRequestException(column + " must use ISO date format yyyy-MM-dd or ISO datetime format.");
         }
     }
 

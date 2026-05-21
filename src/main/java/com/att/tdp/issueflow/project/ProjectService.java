@@ -6,6 +6,8 @@ import com.att.tdp.issueflow.common.ResourceNotFoundException;
 import com.att.tdp.issueflow.project.dto.CreateProjectRequest;
 import com.att.tdp.issueflow.project.dto.ProjectResponse;
 import com.att.tdp.issueflow.project.dto.UpdateProjectRequest;
+import com.att.tdp.issueflow.user.User;
+import com.att.tdp.issueflow.user.UserService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,10 +18,12 @@ public class ProjectService {
 
     private final ProjectRepository projectRepository;
     private final AuditLogService auditLogService;
+    private final UserService userService;
 
-    public ProjectService(ProjectRepository projectRepository, AuditLogService auditLogService) {
+    public ProjectService(ProjectRepository projectRepository, AuditLogService auditLogService, UserService userService) {
         this.projectRepository = projectRepository;
         this.auditLogService = auditLogService;
+        this.userService = userService;
     }
 
     @Transactional(readOnly = true)
@@ -45,7 +49,8 @@ public class ProjectService {
 
     @Transactional
     public ProjectResponse createProject(CreateProjectRequest request) {
-        Project project = new Project(request.name(), request.description());
+        User owner = userService.findUserById(request.ownerId());
+        Project project = new Project(request.name(), request.description(), owner);
         Project savedProject = projectRepository.save(project);
         auditLogService.recordCurrentUserAction("PROJECT", savedProject.getId(), "CREATE", "Project was created.");
 

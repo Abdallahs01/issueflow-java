@@ -6,6 +6,7 @@ public record ProjectResponse(
         Long id,
         String name,
         String description,
+        Long ownerId,
         boolean deleted
 ) {
 
@@ -14,6 +15,7 @@ public record ProjectResponse(
                 project.getId(),
                 project.getName(),
                 project.getDescription(),
+                project.getOwner().getId(),
                 project.isDeleted()
         );
     }

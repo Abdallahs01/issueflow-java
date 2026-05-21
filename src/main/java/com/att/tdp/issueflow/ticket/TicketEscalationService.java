@@ -24,8 +24,9 @@ public class TicketEscalationService {
     @Scheduled(fixedDelayString = "${issueflow.escalation.fixed-delay-ms}")
     @Transactional
     public void escalateOverdueTickets() {
+        Instant now = Instant.now();
         LocalDate today = LocalDate.now(ZoneOffset.UTC);
-        List<Ticket> overdueTickets = ticketRepository.findByDeletedFalseAndStatusNotAndDueDateBefore(TicketStatus.DONE, today);
+        List<Ticket> overdueTickets = ticketRepository.findByDeletedFalseAndStatusNotAndDueDateBefore(TicketStatus.DONE, now);
 
         for (Ticket ticket : overdueTickets) {
             escalateTicketIfNeeded(ticket, today);

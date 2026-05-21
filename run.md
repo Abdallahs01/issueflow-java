@@ -66,6 +66,8 @@ This is a backend REST API, not a visual website. Most endpoints require a JWT t
 }
 ```
 
+Use this user's `id` as `ownerId` when creating projects.
+
 ## Login
 
 `POST http://localhost:8080/auth/login`
@@ -127,6 +129,7 @@ GET    /auth/me
 POST   /projects
 GET    /projects
 GET    /projects/{projectId}
+PATCH  /projects/{projectId}
 POST   /projects/update/{projectId}
 DELETE /projects/{projectId}
 GET    /projects/deleted
@@ -136,6 +139,7 @@ GET    /projects/{projectId}/workload
 POST   /tickets
 GET    /tickets?projectId={projectId}
 GET    /tickets/{ticketId}
+PATCH  /tickets/{ticketId}
 POST   /tickets/update/{ticketId}
 DELETE /tickets/{ticketId}
 GET    /tickets/deleted?projectId={projectId}
@@ -143,6 +147,7 @@ POST   /tickets/{ticketId}/restore
 
 POST   /tickets/{ticketId}/comments
 GET    /tickets/{ticketId}/comments
+PATCH  /tickets/{ticketId}/comments/{commentId}
 POST   /tickets/{ticketId}/comments/update/{commentId}
 DELETE /tickets/{ticketId}/comments/{commentId}
 
@@ -160,6 +165,30 @@ POST   /tickets/import?projectId={projectId}
 GET    /audit-logs
 ```
 
+## Project Request Example
+
+`POST http://localhost:8080/projects`
+
+```json
+{
+  "name": "Sample Project",
+  "description": "A sample project",
+  "ownerId": 1
+}
+```
+
+## Mentions Response
+
+`GET /users/{userId}/mentions?page=1&pageSize=20` returns:
+
+```json
+{
+  "data": [],
+  "total": 0,
+  "page": 1
+}
+```
+
 ## CSV Import Format
 
 ```csv
@@ -171,4 +200,4 @@ Imported ticket,Created from CSV,TODO,HIGH,BUG,,2026-06-01
 
 - Passwords are stored as BCrypt hashes, not plain text.
 - Hibernate creates and updates the database schema from the JPA entities.
-- `schema.sql` and `data.sql` are leftover starter files and are not the source of truth for the application schema.
+- The legacy starter `schema.sql` and `data.sql` files were removed so the application does not create unrelated sample tables.

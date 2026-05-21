@@ -5,7 +5,7 @@ import com.att.tdp.issueflow.ticket.TicketStatus;
 import com.att.tdp.issueflow.ticket.TicketType;
 import jakarta.validation.constraints.Size;
 
-import java.time.LocalDate;
+import java.time.Instant;
 
 public record UpdateTicketRequest(
         @Size(max = 200) String title,
@@ -14,6 +14,6 @@ public record UpdateTicketRequest(
         TicketPriority priority,
         TicketType type,
         Long assigneeId,
-        LocalDate dueDate
+        Instant dueDate
 ) {
 }
