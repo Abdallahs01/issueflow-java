@@ -11,11 +11,13 @@ public record ProjectResponse(
 ) {
 
     public static ProjectResponse from(Project project) {
+        Long ownerId = project.getOwner() == null ? null : project.getOwner().getId();
+
         return new ProjectResponse(
                 project.getId(),
                 project.getName(),
                 project.getDescription(),
-                project.getOwner().getId(),
+                ownerId,
                 project.isDeleted()
         );
     }

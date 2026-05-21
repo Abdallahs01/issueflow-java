@@ -34,6 +34,7 @@ public class WorkloadService {
         return userRepository.findByRoleOrderByCreatedAtAsc(UserRole.DEVELOPER)
                 .stream()
                 .map(user -> new WorkloadResponse(user.getId(), user.getUsername(), countOpenTickets(projectId, user.getId())))
+                .sorted(Comparator.comparingLong(WorkloadResponse::openTicketCount))
                 .toList();
     }
 
