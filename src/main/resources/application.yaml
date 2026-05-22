@@ -8,8 +8,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/issueflow
     username: issueflow
     password: issueflow
-    driverClassName: org.postgresql.Driver
-    platform: postgres
+    driver-class-name: org.postgresql.Driver
   jpa:
     database: POSTGRESQL
     show-sql: true
@@ -17,6 +16,7 @@ spring:
       ddl-auto: update
   sql:
     init:
+      platform: postgres
       mode: always
   servlet:
     multipart:
