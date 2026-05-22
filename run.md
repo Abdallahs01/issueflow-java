@@ -51,6 +51,7 @@ http://localhost:8080
 ```
 
 This is a backend REST API, not a visual website. Most endpoints require a JWT token.
+`POST /users` and `POST /auth/login` are public on purpose so the first user can be created and used to log in.
 
 ## Create First User
 
@@ -67,6 +68,7 @@ This is a backend REST API, not a visual website. Most endpoints require a JWT t
 ```
 
 Use this user's `id` as `ownerId` when creating projects.
+Create one or more DEVELOPER users too, then place their ids in `developerIds` when creating a project if you want auto-assignment and workload to include them.
 
 ## Login
 
@@ -109,7 +111,7 @@ Authorization: Bearer <token>
 - ADMIN-only deleted/restore/delete controls for projects/tickets
 - Mentions in comments
 - Auto-escalation scheduler
-- Auto-assignment to least-loaded developer
+- Auto-assignment to least-loaded developer linked to the project
 - Project workload endpoint
 
 ## Useful Endpoints
@@ -173,9 +175,13 @@ GET    /audit-logs
 {
   "name": "Sample Project",
   "description": "A sample project",
-  "ownerId": 1
+  "ownerId": 1,
+  "developerIds": [2, 3]
 }
 ```
+
+If the owner is a DEVELOPER, the owner is automatically linked to the project. If the owner is an ADMIN, add project developers through `developerIds`.
+Unassigned tickets remain unassigned when the project has no linked developers.
 
 ## Mentions Response
 
@@ -201,3 +207,4 @@ Imported ticket,Created from CSV,TODO,HIGH,BUG,,2026-06-01
 - Passwords are stored as BCrypt hashes, not plain text.
 - Hibernate creates and updates the database schema from the JPA entities.
 - The legacy starter `schema.sql` and `data.sql` files were removed so the application does not create unrelated sample tables.
+- Overdue tickets are escalated at most once per UTC day. A CRITICAL overdue ticket is marked as overdue instead of being escalated further.

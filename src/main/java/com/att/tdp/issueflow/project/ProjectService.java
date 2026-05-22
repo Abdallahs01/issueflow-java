@@ -8,10 +8,13 @@ import com.att.tdp.issueflow.project.dto.ProjectResponse;
 import com.att.tdp.issueflow.project.dto.UpdateProjectRequest;
 import com.att.tdp.issueflow.user.User;
 import com.att.tdp.issueflow.user.UserService;
+import com.att.tdp.issueflow.user.UserRole;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class ProjectService {
@@ -51,6 +54,8 @@ public class ProjectService {
     public ProjectResponse createProject(CreateProjectRequest request) {
         User owner = userService.findUserById(request.ownerId());
         Project project = new Project(request.name(), request.description(), owner);
+        project.setDevelopers(resolveProjectDevelopers(owner, request.developerIds()));
+
         Project savedProject = projectRepository.save(project);
         auditLogService.recordCurrentUserAction("PROJECT", savedProject.getId(), "CREATE", "Project was created.");
 
@@ -70,6 +75,10 @@ public class ProjectService {
 
         if (request.description() != null) {
             project.setDescription(request.description());
+        }
+
+        if (request.developerIds() != null) {
+            project.setDevelopers(resolveProjectDevelopers(project.getOwner(), request.developerIds()));
         }
 
         auditLogService.recordCurrentUserAction("PROJECT", project.getId(), "UPDATE", "Project was updated.");
@@ -95,5 +104,29 @@ public class ProjectService {
     public Project findActiveProjectById(Long projectId) {
         return projectRepository.findByIdAndDeletedFalse(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project was not found."));
+    }
+
+    private Set<User> resolveProjectDevelopers(User owner, Set<Long> developerIds) {
+        Set<User> developers = new HashSet<>();
+
+        if (owner != null && owner.getRole() == UserRole.DEVELOPER) {
+            developers.add(owner);
+        }
+
+        if (developerIds == null) {
+            return developers;
+        }
+
+        for (Long developerId : developerIds) {
+            User developer = userService.findUserById(developerId);
+
+            if (developer.getRole() != UserRole.DEVELOPER) {
+                throw new BadRequestException("Project members must have DEVELOPER role.");
+            }
+
+            developers.add(developer);
+        }
+
+        return developers;
     }
 }

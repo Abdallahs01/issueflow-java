@@ -5,7 +5,6 @@ import com.att.tdp.issueflow.project.dto.WorkloadResponse;
 import com.att.tdp.issueflow.ticket.TicketRepository;
 import com.att.tdp.issueflow.ticket.TicketStatus;
 import com.att.tdp.issueflow.user.User;
-import com.att.tdp.issueflow.user.UserRepository;
 import com.att.tdp.issueflow.user.UserRole;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,41 +17,41 @@ import java.util.Optional;
 public class WorkloadService {
 
     private final ProjectRepository projectRepository;
-    private final UserRepository userRepository;
     private final TicketRepository ticketRepository;
 
-    public WorkloadService(ProjectRepository projectRepository, UserRepository userRepository, TicketRepository ticketRepository) {
+    public WorkloadService(ProjectRepository projectRepository, TicketRepository ticketRepository) {
         this.projectRepository = projectRepository;
-        this.userRepository = userRepository;
         this.ticketRepository = ticketRepository;
     }
 
     @Transactional(readOnly = true)
     public List<WorkloadResponse> getWorkload(Long projectId) {
-        validateProjectExists(projectId);
+        Project project = findActiveProject(projectId);
 
-        return userRepository.findByRoleOrderByCreatedAtAsc(UserRole.DEVELOPER)
+        return project.getDevelopers()
                 .stream()
+                .filter(user -> user.getRole() == UserRole.DEVELOPER)
                 .map(user -> new WorkloadResponse(user.getId(), user.getUsername(), countOpenTickets(projectId, user.getId())))
-                .sorted(Comparator.comparingLong(WorkloadResponse::openTicketCount))
+                .sorted(Comparator.comparingLong(WorkloadResponse::openTicketCount).thenComparing(WorkloadResponse::userId))
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public Optional<User> findLeastLoadedDeveloper(Long projectId) {
-        validateProjectExists(projectId);
+        Project project = findActiveProject(projectId);
 
-        return userRepository.findByRoleOrderByCreatedAtAsc(UserRole.DEVELOPER)
+        return project.getDevelopers()
                 .stream()
-                .min(Comparator.comparingLong(user -> countOpenTickets(projectId, user.getId())));
+                .filter(user -> user.getRole() == UserRole.DEVELOPER)
+                .min(Comparator.comparingLong((User user) -> countOpenTickets(projectId, user.getId())).thenComparing(User::getCreatedAt));
     }
 
     private long countOpenTickets(Long projectId, Long userId) {
         return ticketRepository.countByProjectIdAndAssigneeIdAndDeletedFalseAndStatusNot(projectId, userId, TicketStatus.DONE);
     }
 
-    private void validateProjectExists(Long projectId) {
-        projectRepository.findByIdAndDeletedFalse(projectId)
+    private Project findActiveProject(Long projectId) {
+        return projectRepository.findByIdAndDeletedFalse(projectId)
                 .orElseThrow(() -> new ResourceNotFoundException("Project was not found."));
     }
 }
