@@ -26,6 +26,8 @@ Use Java Spring Boot. Explain IssueFlowApplication.java and then build a clean p
 Implement JWT authentication with login, logout, and current-user endpoints. Store passwords securely and protect the API endpoints.
 ```
 
+JWT signing and validation were implemented directly with Java's standard HMAC-SHA256 APIs in `JwtService`, so the project does not require a separate JWT library dependency.
+
 ## Role-Based Authorization
 
 ```text
